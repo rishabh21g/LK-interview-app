@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.text-light { color: #11181C; }
+.bg-light { background-color: #fff; }
+.text-light-icon { color: #687076; }
+.bg-light-tint { background-color: #0a7ea4; }
+.text-light-tint { color: #0a7ea4; }
+.bg-light-tab-default { background-color: #687076; }
+.text-light-tab-default { color: #687076; }
+.bg-light-tab-selected { background-color: #0a7ea4; }
+.text-light-tab-selected { color: #0a7ea4; }
+
+.text-dark { color: #ecedee; }
+.bg-dark { background-color: #151718; }
+.text-dark-icon { color: #9BA1A6; }
+.bg-dark-tint { background-color: #fff; }
+.text-dark-tint { color: #fff; }
+.bg-dark-tab-default { background-color: #9ba1a6; }
+.text-dark-tab-default { color: #9ba1a6; }
+.bg-dark-tab-selected { background-color: #fff; }
+.text-dark-tab-selected { color: #fff; }
+
+.bg-primary { background-color: #f49b33; }
+.text-primary { color: #f49b33; }
+.border-primary { border-color: #f49b33; }
+.bg-secondary { background-color: #2b2b2b; }
+.border-primary-tint { border-color: #0a7ea4; }
+.text-secondary { color: #2b2b2b; }
+.border-secondary { border-color: #2b2b2b; }
