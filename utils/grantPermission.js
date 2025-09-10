@@ -12,3 +12,4 @@ export async function grantPermission() {
       allowsRecording: true,
     });
   }
+

@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import { RecordingPresets, useAudioRecorder } from "expo-audio";
 import { useCallback, useEffect, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useTimer from "../hooks/useTimer";
 import finishInterview from "../utils/finishedInterview";
@@ -20,7 +20,7 @@ const InterviewDetail = () => {
   const handleFinishInterview = useCallback(() => {
     finishInterview(segments, setSegments);
   }, [segments]);
-  const { min, sec } = useTimer(1, handleFinishInterview);
+  const { min, sec } = useTimer(30, handleFinishInterview);
 
   // handle audio recording
   const handleRecording = () => {
@@ -54,7 +54,31 @@ const InterviewDetail = () => {
       console.error("Failed to stop recording:", error);
     }
   }
-
+  const restartInterview = () => {
+    if (isRecording) stopAudioRecording();
+    setisVideoRecording(false);
+    setSegments([]);
+  };
+  const handleReset = () => {
+    Alert.alert(
+      "Restart Interview",
+      "Are you sure you want to restart the interview?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Restart",
+          style: "destructive",
+          onPress: () => {
+            restartInterview();
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
   // calling first time on render to take mic input permission
   useEffect(() => {
     grantPermission();
@@ -106,7 +130,10 @@ const InterviewDetail = () => {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity className="w-16 h-16 rounded-full border-4 border-primary  justify-center items-center">
+            <TouchableOpacity
+              className="w-16 h-16 rounded-full border-4 border-primary  justify-center items-center"
+              onPress={handleReset}
+            >
               <Ionicons name="refresh" size={24} color="#f49b33" />
             </TouchableOpacity>
           </View>

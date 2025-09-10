@@ -1,4 +1,6 @@
 import * as FileSystem from "expo-file-system";
+import { router } from "expo-router";
+
 import * as Sharing from "expo-sharing";
 import JSZip from "jszip";
 import { Alert } from "react-native";
@@ -40,6 +42,7 @@ async function finishInterview(segments, setSegments) {
     console.error("Failed to zip recordings:", error);
   } finally {
     setSegments(null);
+    router.replace("/home");
   }
 }
 export default finishInterview;
