@@ -1,8 +1,10 @@
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { RecordingPresets, useAudioRecorder } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,7 +25,7 @@ const InterviewDetail = () => {
   const handleFinishInterview = useCallback(() => {
     finishInterview(segments, setSegments);
   }, [segments]);
-  const { min, sec, restartTimer } = useTimer(30, handleFinishInterview);
+  const { min, sec } = useTimer(30, handleFinishInterview);
 
   // handle audio recording
   const handleRecording = () => {
@@ -69,16 +71,18 @@ const InterviewDetail = () => {
       console.error("Failed to stop recording:", error);
     }
   }
-  const restartInterview = () => {
+  const disconnectInterview = () => {
     if (isRecording) stopAudioRecording();
     setisVideoRecording(false);
-    setSegments([]);
-    restartTimer(); // Restart the timer to its initial value
+    setisRecording(false);
+    finishInterview(segments, setSegments);
+    router.push("/");
+
   };
-  const handleReset = () => {
+  const handleDisconnect = () => {
     Alert.alert(
-      "Restart Interview",
-      "Are you sure you want to restart the interview?",
+      "Disconnect Interview",
+      "Are you sure you want to disconnect the interview?",
       [
         {
           text: "Cancel",
@@ -88,7 +92,7 @@ const InterviewDetail = () => {
           text: "Restart",
           style: "destructive",
           onPress: () => {
-            restartInterview();
+            disconnectInterview();
           },
         },
       ],
@@ -157,18 +161,14 @@ const InterviewDetail = () => {
 
             <TouchableOpacity
               className="w-16 h-16 rounded-full border-4 border-primary  justify-center items-center"
-              onPress={handleReset}
+              onPress={handleDisconnect}
             >
-              <Ionicons name="refresh" size={24} color="#f49b33" />
+             <MaterialIcons name="call-end" size={24} color="#f49b33" />
             </TouchableOpacity>
           </View>
         </View>
       </View>
-      <View className=" items-center mb-6 mt-4">
-        <TouchableOpacity className="w-16 h-16 rounded-full bg-dark-tint justify-center items-center">
-          <Ionicons name="person" size={22} color="#f49b33" />
-        </TouchableOpacity>
-      </View>
+    
     </SafeAreaView>
   );
 };

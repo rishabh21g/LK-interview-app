@@ -22,3 +22,4 @@ export default function InterviewResultPage() {
     </SafeAreaView>
   );
 }
+//  PROFILE STATS |  NO OF INTERVIEWS MAX | DOWNLOAD RESULT |
