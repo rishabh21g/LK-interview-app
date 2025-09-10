@@ -1,6 +1,6 @@
 import { Text, TouchableOpacity, View } from "react-native";
 
-const ScheduledInterviewCard = ({ item, onJoin }) => {
+const ScheduledInterviewCard = ({ item, onJoin, onReschedule }) => {
   return (
     <View className="bg-secondary rounded-3xl p-5 mb-4 flex-row justify-between items-center shadow-primary">
       <View className="flex-1 pr-4">
@@ -17,14 +17,24 @@ const ScheduledInterviewCard = ({ item, onJoin }) => {
             Duration: {item.duration}
           </Text>
         </View>
+           <View className="justify-between mt-4 w-full items-center gap-x-4 flex-1 flex-row">
+        <TouchableOpacity
+          className="border-primary border-2 px-6 py-3 rounded-full w-1/2 items-center  active:scale-95"
+          onPress={() => onJoin(item.id)}
+          activeOpacity={0.9}
+        >
+          <Text className="text-white font-bold text-base">Join</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="border-primary border-2 px-6 py-3 rounded-full w-1/2 items-center active:scale-95"
+          onPress={() => onReschedule(item.id)}
+          activeOpacity={0.9}
+        >
+          <Text className="text-white font-bold text-base">Reschedule</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        className="bg-primary px-6 py-3 rounded-full shadow-primary active:scale-95"
-        onPress={() => onJoin(item.id)}
-        activeOpacity={0.9}
-      >
-        <Text className="text-white font-bold text-base">Join</Text>
-      </TouchableOpacity>
+      </View>
+   
     </View>
   );
 };

@@ -76,7 +76,7 @@ const InterviewDetail = () => {
     setisVideoRecording(false);
     setisRecording(false);
     finishInterview(segments, setSegments);
-    router.push("/");
+    router.replace("/(home)");
 
   };
   const handleDisconnect = () => {
@@ -89,7 +89,7 @@ const InterviewDetail = () => {
           style: "cancel",
         },
         {
-          text: "Restart",
+          text: "Disconnect",
           style: "destructive",
           onPress: () => {
             disconnectInterview();
