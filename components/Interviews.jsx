@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../context/AuthContext";
 import { useInterview } from "../context/InterviewContext";
 import AppearedInterviewCard from "./AppearedInterviewCard";
 import ScheduledInterviewCard from "./ScheduledInterviewCard";
@@ -9,13 +10,13 @@ import ScheduledInterviewCard from "./ScheduledInterviewCard";
 const Interviews = () => {
   const [isScheduled, setisScheduled] = useState(true);
   const { appearedInterview, scheduledInterviews } = useInterview();
-
+  const {userDetails} = useAuth()
   const handleJoinInterview = async (interviewId) => {
-   router.replace(`/${interviewId}`);
+   router.push(`/${interviewId}`);
   };
 
   const handleViewInterview = (interviewId) => {
-    router.replace(`/result/${interviewId}`);
+    router.replace(`/${userDetails.userID}/result/${interviewId}`);
   };
 
   return (
