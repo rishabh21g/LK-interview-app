@@ -14,7 +14,7 @@ export const InterviewProvider = ({ children }) => {
  
   const [loading, setLoading] = useState(false);
 
-  const dummyInterviews = [
+  const dummyAppearedInterviews = [
     {
       id: "1",
       interviewName: "Frontend Developer Interview",
@@ -99,7 +99,7 @@ export const InterviewProvider = ({ children }) => {
     setLoading(true);
     try {
       //API call for fetchin the interviews
-      setappearedInterview(dummyInterviews);
+      setappearedInterview(dummyAppearedInterviews);
       setScheduledInterviews(dummyScheduledInterviews);
     } catch (error) {
       Alert.alert("Error loading interviews")

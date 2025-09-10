@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 
-const UserLayout = () => {
+const RescheduleLayout = () => {
   return (
     <Stack
       screenOptions={{
@@ -8,15 +8,11 @@ const UserLayout = () => {
       }}
     >
       <Stack.Screen
-        name="result"
-        options={{ title: "Interview Results" }}
-      />
-      <Stack.Screen
-        name="reschedule"
+        name="[interviewId]"
         options={{ title: "Reschedule Interview" }}
       />
     </Stack>
   );
 };
 
-export default UserLayout;
+export default RescheduleLayout;

@@ -16,7 +16,12 @@ const Interviews = () => {
   };
 
   const handleViewInterview = (interviewId) => {
-    router.replace(`/${userDetails.userID}/result/${interviewId}`);
+    router.push(`/${userDetails.userID}/result/${interviewId}`);
+  };
+
+  const handleReschedule = (interviewId) => {
+    // Logic to reschedule the interview
+    router.push(`/${userDetails.userID}/reschedule/${interviewId}`);
   };
 
   return (
@@ -65,6 +70,7 @@ const Interviews = () => {
           <ScheduledInterviewCard
             item={item}
             onJoin={handleJoinInterview}
+            onReschedule={handleReschedule}
           />
         )}
         keyExtractor={(item) => item.id}
