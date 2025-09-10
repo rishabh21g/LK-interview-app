@@ -29,7 +29,15 @@ function useTimer(minutes, finishInterview) {
     }, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [minutes]);
+  }, [secondsLeft]);
+
+  // Function to restart the timer
+  const restartTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    setSecondsLeft(minutes * 60);
+  };
 
   // Format minutes and seconds as MM:SS
   const min = Math.floor(secondsLeft / 60)
@@ -37,7 +45,7 @@ function useTimer(minutes, finishInterview) {
     .padStart(2, "0");
   const sec = (secondsLeft % 60).toString().padStart(2, "0");
 
-  return { min, sec, secondsLeft };
+  return { min, sec, secondsLeft, restartTimer };
 }
 
 export default useTimer;

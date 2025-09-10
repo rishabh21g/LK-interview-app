@@ -2,8 +2,9 @@ import { AudioModule, setAudioModeAsync } from "expo-audio";
 import { Alert } from "react-native";
 
 export async function grantPermission() {
-    const status = await AudioModule.requestRecordingPermissionsAsync();
-    if (!status.granted) {
+    // Request audio permission
+    const audioStatus = await AudioModule.requestRecordingPermissionsAsync();
+    if (!audioStatus.granted) {
       Alert.alert("Permission to access microphone was denied");
     }
 
