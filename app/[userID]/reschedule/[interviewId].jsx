@@ -7,11 +7,11 @@ import { useInterview } from "../../../context/InterviewContext";
 
 const RescheduleInterview = () => {
   const { interviewId } = useLocalSearchParams();
-  const { scheduledInterviews } = useInterview();
-  
+  const { scheduledInterviews } = useInterview();  
   const [newDate, setNewDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [newTime, setNewTime] = useState("");
+  const [newTime, setNewTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [reason, setReason] = useState("");
 
   // Find the interview to reschedule
@@ -24,24 +24,38 @@ const RescheduleInterview = () => {
     }
   };
 
-  const formatDate = (date) => {
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+  const onTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      setNewTime(selectedTime);
+    }
   };
 
+  const formatDate = (date) => {
+    return date.toISOString().split('T')[0];
+  };
+
+  const formatTime = (date) => {
+    return date.toTimeString().slice(0, 5);
+  };
+ const confirmReschedule = async() => {
+  //Logic to confirm reschedule in backend api call
+  router.back();
+ }
   const handleReschedule = () => {
     if (!newDate || !newTime) {
       Alert.alert("Error", "Please select a new date and time");
       return;
     }
 
-    // Here you would typically make an API call to reschedule the interview
+    
     Alert.alert(
       "Reschedule Request Sent", 
-      `Your reschedule request has been submitted for ${formatDate(newDate)} at ${newTime}. You will be notified once approved.`,
+      `Your reschedule request has been submitted for ${formatDate(newDate)} at ${formatTime(newTime)}. You will be notified once approved.`,
       [
         {
           text: "OK",
-          onPress: () => router.back()
+          onPress: confirmReschedule()
         }
       ]
     );
@@ -89,6 +103,7 @@ const RescheduleInterview = () => {
               display="default"
               onChange={onDateChange}
               minimumDate={new Date()}
+              
             />
           )}
         </View>
@@ -96,13 +111,23 @@ const RescheduleInterview = () => {
         {/* New Time Input */}
         <View className="mb-4">
           <Text className="text-white text-base font-semibold mb-2">New Time</Text>
-          <TextInput
-            className="bg-secondary text-white p-4 rounded-lg"
-            placeholder="HH:MM"
-            placeholderTextColor="#9CA3AF"
-            value={newTime}
-            onChangeText={setNewTime}
-          />
+          <TouchableOpacity
+            onPress={() => setShowTimePicker(true)}
+            className="bg-secondary p-4 rounded-lg"
+          >
+            <Text className="text-white">
+              {formatTime(newTime)}
+            </Text>
+          </TouchableOpacity>
+          
+          {showTimePicker && (
+            <DateTimePicker
+              value={newTime}
+              mode="time"
+              display="default"
+              onChange={onTimeChange}
+            />
+          )}
         </View>
 
         {/* Reason Input */}
@@ -120,7 +145,7 @@ const RescheduleInterview = () => {
         </View>
 
         {/* Buttons */}
-        <View className="flex-row space-x-4">
+        <View className="flex-row gap-x-4">
           <TouchableOpacity
             onPress={handleCancel}
             className="flex-1 bg-gray-600 py-4 rounded-lg"

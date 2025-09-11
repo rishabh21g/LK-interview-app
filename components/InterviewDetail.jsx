@@ -1,7 +1,8 @@
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useNavigation } from "@react-navigation/native";
 import { RecordingPresets, useAudioRecorder } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { router } from "expo-router";
@@ -16,12 +17,12 @@ const InterviewDetail = () => {
   const [isRecording, setisRecording] = useState(false);
   const [isVideoRecording, setisVideoRecording] = useState(false);
   const [segments, setSegments] = useState([]); // for audio segements compilatiopn array
+  const navigation = useNavigation()
   const [facing] = useState("front");
   const [videoPermission, requestVideoPermission] = useCameraPermissions();
   const { userDetail } = useAuth();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
 
-  // finished interview function
   const handleFinishInterview = useCallback(() => {
     finishInterview(segments, setSegments);
   }, [segments]);
@@ -76,8 +77,7 @@ const InterviewDetail = () => {
     setisVideoRecording(false);
     setisRecording(false);
     finishInterview(segments, setSegments);
-    router.replace("/(home)");
-
+    router.push("/(main)/home");
   };
   const handleDisconnect = () => {
     Alert.alert(
@@ -91,9 +91,7 @@ const InterviewDetail = () => {
         {
           text: "Disconnect",
           style: "destructive",
-          onPress: () => {
-            disconnectInterview();
-          },
+          onPress: () => disconnectInterview(),
         },
       ],
       { cancelable: true }
@@ -104,6 +102,16 @@ const InterviewDetail = () => {
     grantPermission();
   }, []);
 
+
+  // for disabling back button
+ useEffect(()=>{
+ const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+    e.preventDefault();
+    handleDisconnect() // Show alert to confirm disconnect
+  });
+  return unsubscribe;
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [navigation])
   return (
     <SafeAreaView className="flex-1 bg-dark py-2">
       <View className="flex-1 px-5 gap-y-5">
@@ -125,11 +133,11 @@ const InterviewDetail = () => {
             )}
           </View>
         </View>
-          <View>
-            <Text className="text-dark text-5xl font-bold text-center mt-4">
-              {min}:{sec}
-            </Text>
-          </View>
+        <View>
+          <Text className="text-dark text-5xl font-bold text-center mt-4">
+            {min}:{sec}
+          </Text>
+        </View>
 
         <View className="items-center ">
           <Text className="text-dark text-2xl font-light mb-2 ">
@@ -163,12 +171,11 @@ const InterviewDetail = () => {
               className="w-16 h-16 rounded-full border-4 border-primary  justify-center items-center"
               onPress={handleDisconnect}
             >
-             <MaterialIcons name="call-end" size={24} color="#f49b33" />
+              <MaterialIcons name="call-end" size={24} color="#f49b33" />
             </TouchableOpacity>
           </View>
         </View>
       </View>
-    
     </SafeAreaView>
   );
 };

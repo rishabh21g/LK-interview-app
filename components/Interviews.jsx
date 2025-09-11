@@ -27,7 +27,7 @@ const Interviews = () => {
   return (
    <SafeAreaView className="flex-1 bg-dark">
   {/* Tabs */}
-  <View className="flex-row justify-center mb-6 space-x-4 px-6 mt-8">
+  <View className="flex-row justify-center mb-6 gap-x-4 px-6 mt-8">
     {/* Appeared Tab */}
     <TouchableOpacity
       onPress={() => setisScheduled(false)}
