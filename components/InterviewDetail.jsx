@@ -10,23 +10,24 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useTimer from "../hooks/useTimer";
-import finishInterview from "../utils/finishedInterview";
+import * as FileSystem from "expo-file-system";
+
+import * as Sharing from "expo-sharing";
+import JSZip from "jszip";
+
 import { grantPermission } from "../utils/grantPermission";
 
 const InterviewDetail = () => {
   const [isRecording, setisRecording] = useState(false);
   const [isVideoRecording, setisVideoRecording] = useState(false);
   const [segments, setSegments] = useState([]); // for audio segements compilatiopn array
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const [facing] = useState("front");
   const [videoPermission, requestVideoPermission] = useCameraPermissions();
   const { userDetail } = useAuth();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
 
-  const handleFinishInterview = useCallback(() => {
-    finishInterview(segments, setSegments);
-  }, [segments]);
-  const { min, sec } = useTimer(30, handleFinishInterview);
+  const { min, sec } = useTimer(1, finishInterview); // 1 minute timer for testing
 
   // handle audio recording
   const handleRecording = () => {
@@ -97,21 +98,57 @@ const InterviewDetail = () => {
       { cancelable: true }
     );
   };
+
+  async function finishInterview(segments, setSegments) {
+    try {
+      const zip = new JSZip();
+
+      for (let i = 0; i < segments.length; i++) {
+        const fileUri = segments[i];
+        const base64 = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        zip.file(`segment-${i + 1}.m4a`, base64, { base64: true });
+      }
+
+      const zipContent = await zip.generateAsync({ type: "base64" });
+      const zipFileUri =
+        FileSystem.documentDirectory + "interview_recordings.zip";
+
+      await FileSystem.writeAsStringAsync(zipFileUri, zipContent, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      console.log("Created zip at:", zipFileUri);
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(zipFileUri);
+      } else {
+        Alert.alert("Sharing not available", `File at: ${zipFileUri}`);
+      }
+    } catch (error) {
+      console.error("Failed to zip recordings:", error);
+    } finally {
+      setSegments(null);
+      router.replace("/(main)/home");
+    }
+  }
+
   // calling first time on render to take mic and camera input permission
   useEffect(() => {
     grantPermission();
   }, []);
 
-
   // for disabling back button
- useEffect(()=>{
- const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-    e.preventDefault();
-    handleDisconnect() // Show alert to confirm disconnect
-  });
-  return unsubscribe;
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [navigation])
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault();
+      handleDisconnect(); // Show alert to confirm disconnect
+    });
+    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation]);
   return (
     <SafeAreaView className="flex-1 bg-dark py-2">
       <View className="flex-1 px-5 gap-y-5">

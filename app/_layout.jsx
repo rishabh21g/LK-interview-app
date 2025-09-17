@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../context/AuthContext";
 import { InterviewProvider } from "../context/InterviewContext";
+
 import "../global.css";
 export default function RootLayout() {
   return (
@@ -10,8 +11,10 @@ export default function RootLayout() {
         <InterviewProvider>
           <StatusBar
             style="light"
-            backgroundColor="#000000"
-            translucent={false}
+            translucent={true}
+            animated={true}
+            networkActivityIndicatorVisible={true}
+            statusBarStyle="auto"
           />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
