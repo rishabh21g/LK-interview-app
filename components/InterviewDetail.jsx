@@ -1,19 +1,17 @@
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import { RecordingPresets, useAudioRecorder } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as FileSystem from "expo-file-system";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import * as Sharing from "expo-sharing";
+import JSZip from "jszip";
+import { useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useTimer from "../hooks/useTimer";
-import * as FileSystem from "expo-file-system";
-
-import * as Sharing from "expo-sharing";
-import JSZip from "jszip";
 
 import { grantPermission } from "../utils/grantPermission";
 
@@ -99,7 +97,7 @@ const InterviewDetail = () => {
     );
   };
 
-  async function finishInterview(segments, setSegments) {
+  async function finishInterview() {
     try {
       const zip = new JSZip();
 
@@ -138,6 +136,7 @@ const InterviewDetail = () => {
   // calling first time on render to take mic and camera input permission
   useEffect(() => {
     grantPermission();
+    // ToastAndroid.show("Interview Started", ToastAndroid.SHORT);
   }, []);
 
   // for disabling back button
@@ -208,7 +207,7 @@ const InterviewDetail = () => {
               className="w-16 h-16 rounded-full border-4 border-primary  justify-center items-center"
               onPress={handleDisconnect}
             >
-              <MaterialIcons name="call-end" size={24} color="#f49b33" />
+              <Feather name="phone-off" size={24} color="#f49b33" />
             </TouchableOpacity>
           </View>
         </View>

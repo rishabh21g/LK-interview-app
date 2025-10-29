@@ -1,7 +1,9 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// import axios from "axios";
+import axios from "axios";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -15,61 +17,51 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import uuid from "react-native-uuid";
 import { useAuth } from "../../context/AuthContext";
-
-import { validateInputsLog } from "../../utils/inputChecker";
+import { useInterview } from "../../context/InterviewContext";
 
 const Login = () => {
-  const [email, setemail] = useState("");
+  const [candidateId, setCandidateId] = useState("");
   const [password, setpassword] = useState("");
   const [loading, setloading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { setauthToken, setuserDetails } = useAuth();
+  const { setScheduledInterviews } = useInterview();
+  const URL = "https://interview.logicknots.com/auth/can/login";
 
-
-  // handle login dummy code 
+  // handle login dummy code
   const handleLogin = async () => {
     setloading(true);
-    // const user = { email, password };
     try {
-      // const response = await axios.post(
-      //   "http://192.168.117.43:4000/api/user/login",
-      //   user
-      // );
-
-      // const token = response.data.token;
-      // const userDetails = {
-      //   name: response.data.userName,
-      //   email: response.data.email,
-      //   userID: response.data.userID,
-      // };
-      const token = "hfiudshfuidhfuieh2734877";
+      const { data } = await axios.post(URL, { candidateId, password });
       const userDetails = {
-        email: email,
-        password: password,
-        userID: uuid.v4(),
+        name: data?.candidate.name,
+        email: data?.candidate.email,
+        candidateId: data?.candidate.candidateId,
+        phone: data?.candidate.phone,
       };
-
-      if (token) {
-        //Update Local Storage
-        await AsyncStorage.setItem("authToken", token);
-        await AsyncStorage.setItem("userDetails", JSON.stringify(userDetails));
-        // Update context (AuthProvider)
-        setauthToken(token);
-        setuserDetails(userDetails);
-        Alert.alert("Login Successfully");
-        router.replace("/home");
-        
+      // Store sensitive token securely
+      if (Platform.OS === "web") {
+        await AsyncStorage.setItem("access_token", data?.access_token);
+      } else {
+        await SecureStore.setItemAsync("access_token", data?.access_token);
       }
-      setemail("");
-      setpassword("");
+
+      // Non-sensitive profile can stay in AsyncStorage
+      await AsyncStorage.setItem("userDetails", JSON.stringify(userDetails));
+      setauthToken(data.access_token);
+      setuserDetails(userDetails);
+      setScheduledInterviews(data.candidate.interviews);
+      Alert.alert("Login Successfully");
+      router.replace("/home");
     } catch (err) {
       Alert.alert("Login failed");
       console.log("Error while loggin in " + err.message);
     } finally {
       setloading(false);
+      setCandidateId("");
+      setpassword("");
     }
   };
 
@@ -89,12 +81,11 @@ const Login = () => {
 
         {/* Email Input */}
         <View className="flex-row items-center rounded-xl px-3 mb-5 h-12 shadow-primary bg-secondary">
-          <MaterialIcons name="email" size={22} color="#f49b33" />
+          <FontAwesome name="user" size={22} color="#f49b33" />
           <TextInput
-            placeholder="Enter your email"
-            onChangeText={(text) => setemail(text.trim())}
-            value={email}
-            keyboardType="email-address"
+            placeholder="Enter your Candidate Id"
+            onChangeText={(text) => setCandidateId(text.trim())}
+            value={candidateId}
             className="flex-1 ml-2 text-sm text-dark placeholder-dark-icon"
             placeholderTextColor="#9BA1A6"
           />
@@ -120,21 +111,11 @@ const Login = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Forget / Keep me Logged in */}
-        <View className="flex-row justify-between mb-8 px-1">
-          <Text className="text-[12px] italic text-dark-icon">
-            Keep me logged in
-          </Text>
-        </View>
-
         {/* Login Button */}
         <Pressable
           disabled={loading}
-          className="h-12 rounded-xl justify-center items-center bg-primary"
-          onPress={() => {
-            const checkResult = validateInputsLog(email, password);
-            if (checkResult) handleLogin();
-          }}
+          className="h-12 rounded-xl justify-center items-center bg-primary mt-2"
+          onPress={handleLogin}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />

@@ -1,50 +1,70 @@
-# Welcome to your Expo app 👋
+# LK Interview App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Short description
+A lightweight interview application to manage questions, candidates, and interview sessions. Update the sections below to match your project's actual stack and commands.
 
-## Get started
+## Features
+- Create and manage interview questions
+- Schedule interviews and track candidates
+- Run interviews and record results
+- REST API and single-page frontend (adjust to your implementation)
 
-1. Install dependencies
+## Tech stack
+- Frontend: React (or your chosen framework)
+- Backend: Node.js + Express (or your chosen backend)
+- Database: PostgreSQL / SQLite / MongoDB (replace as needed)
+- Package manager: npm or yarn
 
-   ```bash
-   npm install
-   ```
+## Prerequisites
+- Node.js (>= 16)
+- npm or yarn
+- Database (if required) and CLI access
 
-2. Start the app
+## Getting started (local)
+1. Clone the repo:
+    git clone <repo-url>
+2. Install dependencies:
+    cd LK-interview-app
+    npm install
+    # or
+    yarn install
+3. Set environment variables:
+    Create a `.env` file based on `.env.example` and update values (DB connection, PORT, etc.)
+4. Start development servers:
+    # backend
+    npm run dev:server
+    # frontend
+    npm run dev:client
 
-   ```bash
-   npx expo start
-   ```
+## Common scripts
+- npm run dev or yarn dev — run frontend and backend in development
+- npm run start — start the production server
+- npm run build — build the frontend for production
+- npm run test — run test suite
+- npm run lint — run linters and formatters
 
-In the output, you'll find options to open the app in a
+## Directory structure (example)
+- /client — frontend app
+- /server — backend API
+- /scripts — helpful scripts
+- /migrations — DB migrations
+- README.md — this file
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Tests
+Add unit/integration tests under `tests/` or `__tests__/`. Run with:
+npm run test
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Deployment
+- Build frontend: npm run build
+- Start backend in production with proper env vars
+- Use Docker, CI/CD, or your cloud provider of choice
 
-## Get a fresh project
+## Contributing
+- Fork the repository
+- Create a feature branch
+- Open a PR with a clear description and tests
 
-When you're ready, run:
+## License
+Specify a license (e.g., MIT) in LICENSE file.
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Replace placeholders above with the exact commands and stack used in this repository.

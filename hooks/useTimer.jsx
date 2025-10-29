@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-function useTimer(minutes, handleFinishInterview) {
+function useTimer(minutes, finishInterview) {
   const [secondsLeft, setSecondsLeft] = useState(minutes * 60);
   const intervalRef = useRef(null);
-  const callbackRef = useRef(handleFinishInterview);
-
-  useEffect(() => {
-    callbackRef.current = handleFinishInterview;
-  }, [handleFinishInterview]);
 
   // Reset timer if minutes change
   useEffect(() => {
@@ -21,7 +16,7 @@ function useTimer(minutes, handleFinishInterview) {
       setSecondsLeft((s) => {
         if (s <= 1) {
           clearInterval(intervalRef.current);
-          callbackRef.current();
+          finishInterview();
           return 0;
         }
         return s - 1;
@@ -29,8 +24,7 @@ function useTimer(minutes, handleFinishInterview) {
     }, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [secondsLeft]);
-
+  }, []);
 
   // Format minutes and seconds as MM:SS
   const min = Math.floor(secondsLeft / 60)
