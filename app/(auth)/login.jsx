@@ -34,6 +34,10 @@ const Login = () => {
   const handleLogin = async () => {
     setloading(true);
     try {
+      if (candidateId.length === 0 || password.length === 0) {
+        Alert.alert("Error", "Please fill all the fields");
+        return;
+      }
       const { data } = await axios.post(URL, { candidateId, password });
       const userDetails = {
         name: data?.candidate.name,
@@ -53,6 +57,7 @@ const Login = () => {
       setauthToken(data.access_token);
       setuserDetails(userDetails);
       setScheduledInterviews(data.candidate.interviews);
+      console.log(data);
       Alert.alert("Login Successfully");
       router.replace("/home");
     } catch (err) {
@@ -80,7 +85,7 @@ const Login = () => {
         </View>
 
         {/* Email Input */}
-        <View className="flex-row items-center rounded-xl px-3 mb-5 h-12 shadow-primary bg-secondary">
+        <View className="flex-row items-center rounded-xl px-3 mb-5 h-12  bg-secondary">
           <FontAwesome name="user" size={22} color="#f49b33" />
           <TextInput
             placeholder="Enter your Candidate Id"
@@ -92,7 +97,7 @@ const Login = () => {
         </View>
 
         {/* Password Input */}
-        <View className="flex-row items-center rounded-xl px-3 mb-3 h-12 shadow-primary bg-secondary">
+        <View className="flex-row items-center rounded-xl px-3 mb-3 h-12  bg-secondary">
           <MaterialIcons name="lock" size={22} color="#f49b33" />
           <TextInput
             secureTextEntry={!showPassword}

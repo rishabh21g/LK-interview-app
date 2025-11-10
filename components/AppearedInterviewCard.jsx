@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 const AppearedInterviewCard = ({ item, onPress }) => {
   return (
     <TouchableOpacity
-      className="bg-secondary rounded-3xl p-5 mb-4 flex-row justify-between items-center shadow-primary"
+      className="bg-secondary rounded-3xl p-5 mb-4 flex-row justify-between items-center"
       onPress={() => onPress(item.id)}
       activeOpacity={0.85}
     >

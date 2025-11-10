@@ -22,11 +22,10 @@ const InterviewDetail = () => {
   const navigation = useNavigation();
   const [facing] = useState("front");
   const [videoPermission, requestVideoPermission] = useCameraPermissions();
-  const { userDetail } = useAuth();
+  const { userDetail, interviewQuestions } = useAuth();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
 
   const { min, sec } = useTimer(1, finishInterview); // 1 minute timer for testing
-
   // handle audio recording
   const handleRecording = () => {
     if (!isRecording) {
@@ -148,6 +147,8 @@ const InterviewDetail = () => {
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation]);
+  console.log(interviewQuestions);
+
   return (
     <SafeAreaView className="flex-1 bg-dark py-2">
       <View className="flex-1 px-5 gap-y-5">

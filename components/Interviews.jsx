@@ -1,6 +1,9 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
 import { useInterview } from "../context/InterviewContext";
@@ -9,91 +12,125 @@ import ScheduledInterviewCard from "./ScheduledInterviewCard";
 
 const Interviews = () => {
   const [isScheduled, setisScheduled] = useState(true);
-  const { appearedInterview, scheduledInterviews } = useInterview();
-  const {userDetails} = useAuth()
-  const handleJoinInterview = async (interviewId) => {
-   router.push(`/${interviewId}`);
+  const { appearedInterview, scheduledInterviews, setInterviewQuestions } =
+    useInterview();
+  const [joiningLoading, setJoiningLoading] = useState(false);
+  const { userDetails } = useAuth();
+  // console.log(scheduledInterviews);
+  // function to handle join interview
+  const handleJoinInterview = async (interview_name) => {
+    setJoiningLoading(true);
+    try {
+      let access_token = "";
+      // Retrieve token securely
+      if (Platform.OS === "web") {
+        access_token = await AsyncStorage.getItem("access_token");
+      } else {
+        access_token = await SecureStore.getItemAsync("access_token");
+      }
+      // console.log(access_token);
+      const joinData = {
+        interview_name: interview_name,
+      };
+      const joinResult = await axios.post(
+        "https://interview.logicknots.com/interview/start",
+        JSON.stringify(joinData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+      console.log(joinResult);
+      setInterviewQuestions(joinResult.data);
+      console.log("Join interview response:", joinResult.data);
+      router.push(`/${interview_name}`);
+    } catch (err) {
+      console.log("Error joining interview:", err);
+    } finally {
+      setJoiningLoading(false);
+    }
   };
 
-  const handleViewInterview = (interviewId) => {
-    router.push(`/${userDetails.userID}/result/${interviewId}`);
+  const handleViewInterview = (interview_name) => {
+    router.push(`/${userDetails.candidateId}/result/${interview_name}`);
   };
-
-  const handleReschedule = (interviewId) => {
-    // Logic to reschedule the interview
-    router.push(`/${userDetails.userID}/reschedule/${interviewId}`);
-  };
-
+  if (joiningLoading) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-dark">
+        <Text className="text-white text-lg">Joining Interview...</Text>
+      </SafeAreaView>
+    );
+  }
   return (
-   <SafeAreaView className="flex-1 bg-dark">
-  {/* Tabs */}
-  <View className="flex-row justify-center mb-6 gap-x-4 px-6 mt-8">
-    {/* Appeared Tab */}
-    <TouchableOpacity
-      onPress={() => setisScheduled(false)}
-      className={`flex-1 py-3 rounded-xl items-center ${
-        !isScheduled ? "bg-primary" : "bg-secondary"
-      }`}
-    >
-      <Text
-        className={`text-base font-semibold ${
-          !isScheduled ? "text-white" : "text-dark-icon"
-        }`}
-      >
-        Appeared
-      </Text>
-    </TouchableOpacity>
+    <SafeAreaView className="flex-1 bg-dark">
+      {/* Tabs */}
+      <View className="flex-row justify-center mb-6 gap-x-4 px-6 mt-8">
+        {/* Appeared Tab */}
+        <TouchableOpacity
+          onPress={() => setisScheduled(false)}
+          className={`flex-1 py-3 rounded-xl items-center ${
+            !isScheduled ? "bg-primary" : "bg-secondary"
+          }`}
+        >
+          <Text
+            className={`text-base font-semibold ${
+              !isScheduled ? "text-white" : "text-dark-icon"
+            }`}
+          >
+            Appeared
+          </Text>
+        </TouchableOpacity>
 
-    {/* Scheduled Tab */}
-    <TouchableOpacity
-      onPress={() => setisScheduled(true)}
-      className={`flex-1 py-3 rounded-xl items-center ${
-        isScheduled ? "bg-primary" : "bg-secondary"
-      }`}
-    >
-      <Text
-        className={`text-base font-semibold ${
-          isScheduled ? "text-white" : "text-dark-icon"
-        }`}
-      >
-        Scheduled
-      </Text>
-    </TouchableOpacity>
-  </View>
+        {/* Scheduled Tab */}
+        <TouchableOpacity
+          onPress={() => setisScheduled(true)}
+          className={`flex-1 py-3 rounded-xl items-center ${
+            isScheduled ? "bg-primary" : "bg-secondary"
+          }`}
+        >
+          <Text
+            className={`text-base font-semibold ${
+              isScheduled ? "text-white" : "text-dark-icon"
+            }`}
+          >
+            Scheduled
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-  {/* List */}
-  <View className="flex-1 px-6">
-    {isScheduled ? (
-      <FlatList
-        data={scheduledInterviews}
-        renderItem={({ item }) => (
-          <ScheduledInterviewCard
-            item={item}
-            onJoin={handleJoinInterview}
-            onReschedule={handleReschedule}
+      {/* List */}
+      <View className="flex-1 px-6">
+        {isScheduled ? (
+          <FlatList
+            data={scheduledInterviews}
+            renderItem={({ item }) => (
+              <ScheduledInterviewCard
+                item={item}
+                onJoin={handleJoinInterview}
+              />
+            )}
+            keyExtractor={(item) => item.interview_name}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
+          />
+        ) : (
+          <FlatList
+            data={appearedInterview}
+            renderItem={({ item }) => (
+              <AppearedInterviewCard
+                item={item}
+                onPress={handleViewInterview}
+              />
+            )}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
           />
         )}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
-      />
-    ) : (
-      <FlatList
-        data={appearedInterview}
-        renderItem={({ item }) => (
-          <AppearedInterviewCard
-            item={item}
-            onPress={handleViewInterview}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
-      />
-    )}
-  </View>
-</SafeAreaView>
-
+      </View>
+    </SafeAreaView>
   );
 };
 

@@ -11,7 +11,8 @@ export default function Index() {
     if (loading) return;
 
     if (authToken) {
-      router.replace("/home");
+      // console.log(authToken)
+      router.push("/home")
     } else {
       Alert.alert("Not authenticated", "Please log in to continue.");
       router.replace("/login");
