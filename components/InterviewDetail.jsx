@@ -9,11 +9,20 @@ import { router } from "expo-router";
 import * as Sharing from "expo-sharing";
 import JSZip from "jszip";
 import { useEffect, useState } from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  Text,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useTimer from "../hooks/useTimer";
 
+import { useInterview } from "../context/InterviewContext";
 import { grantPermission } from "../utils/grantPermission";
+import questionAudioCall from "../utils/questionAudio";
 
 const InterviewDetail = () => {
   const [isRecording, setisRecording] = useState(false);
@@ -22,10 +31,11 @@ const InterviewDetail = () => {
   const navigation = useNavigation();
   const [facing] = useState("front");
   const [videoPermission, requestVideoPermission] = useCameraPermissions();
-  const { userDetail, interviewQuestions } = useAuth();
+  const { userDetails } = useAuth();
+  const { interviewQuestions } = useInterview();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const { min, sec } = useTimer(interviewQuestions?.time, finishInterview);
 
-  const { min, sec } = useTimer(1, finishInterview); // 1 minute timer for testing
   // handle audio recording
   const handleRecording = () => {
     if (!isRecording) {
@@ -70,6 +80,7 @@ const InterviewDetail = () => {
       console.error("Failed to stop recording:", error);
     }
   }
+
   const disconnectInterview = () => {
     if (isRecording) stopAudioRecording();
     setisVideoRecording(false);
@@ -77,6 +88,7 @@ const InterviewDetail = () => {
     finishInterview(segments, setSegments);
     router.push("/(main)/home");
   };
+
   const handleDisconnect = () => {
     Alert.alert(
       "Disconnect Interview",
@@ -135,7 +147,10 @@ const InterviewDetail = () => {
   // calling first time on render to take mic and camera input permission
   useEffect(() => {
     grantPermission();
-    // ToastAndroid.show("Interview Started", ToastAndroid.SHORT);
+    questionAudioCall(interviewQuestions);
+    if (Platform.OS !== "web") {
+      ToastAndroid.show("Interview Started", ToastAndroid.SHORT);
+    }
   }, []);
 
   // for disabling back button
@@ -147,13 +162,11 @@ const InterviewDetail = () => {
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation]);
-  console.log(interviewQuestions);
-
   return (
     <SafeAreaView className="flex-1 bg-dark py-2">
       <View className="flex-1 px-5 gap-y-5">
         <Text className="text-dark text-4xl font-bold text-center  mt-20">
-          Interview Name
+          {interviewQuestions.interview_name || "Interview Name"}
         </Text>
 
         <View className="items-center  mt-8">
@@ -178,7 +191,7 @@ const InterviewDetail = () => {
 
         <View className="items-center ">
           <Text className="text-dark text-2xl font-light mb-2 ">
-            {userDetail?.name || "Candidate Name"}
+            {userDetails?.name || "Candidate Name"}
           </Text>
 
           <View className="flex-row justify-center items-center gap-x-8 mt-3">

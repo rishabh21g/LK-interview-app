@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
+import getAccessToken, { deleteAccessToken } from "../utils/getAccesstoken";
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
@@ -20,11 +20,7 @@ export const AuthProvider = ({ children }) => {
   //logout and clear auth state
   const clearAuthState = async () => {
     try {
-      if (Platform.OS !== "web") {
-        await SecureStore.deleteItemAsync("access_token");
-      } else {
-        await AsyncStorage.removeItem("access_token");
-      }
+      await deleteAccessToken();
       await AsyncStorage.removeItem("userDetails");
       setauthToken(null);
       setuserDetails({
@@ -44,12 +40,8 @@ export const AuthProvider = ({ children }) => {
   const verifyAuthTokenandUser = async () => {
     setloading(true);
     try {
-      let savedToken;
-      if (Platform.OS === "web") {
-        savedToken = await AsyncStorage.getItem("access_token");
-      } else {
-        savedToken = await SecureStore.getItemAsync("access_token");
-      }
+      const savedToken = await getAccessToken();
+
       const savedUserStr = await AsyncStorage.getItem("userDetails");
       // console.log(savedToken);
 

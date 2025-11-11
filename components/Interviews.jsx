@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
@@ -12,11 +12,15 @@ import ScheduledInterviewCard from "./ScheduledInterviewCard";
 
 const Interviews = () => {
   const [isScheduled, setisScheduled] = useState(true);
-  const { appearedInterview, scheduledInterviews, setInterviewQuestions } =
-    useInterview();
+  const {
+    appearedInterview,
+    scheduledInterviews,
+    setInterviewQuestions,
+    setScheduledInterviews,
+  } = useInterview();
   const [joiningLoading, setJoiningLoading] = useState(false);
   const { userDetails } = useAuth();
-  // console.log(scheduledInterviews);
+
   // function to handle join interview
   const handleJoinInterview = async (interview_name) => {
     setJoiningLoading(true);
@@ -56,17 +60,31 @@ const Interviews = () => {
   const handleViewInterview = (interview_name) => {
     router.push(`/${userDetails.candidateId}/result/${interview_name}`);
   };
+
+  async function loadUserInterviewsFromLS() {
+    const storedInterviews = await AsyncStorage.getItem("scheduledInterviews");
+    setScheduledInterviews(JSON.parse(storedInterviews) || []);
+  }
+
+  // load from local storage on component mount
+  useEffect(() => {
+    loadUserInterviewsFromLS();
+  }, []);
+
+  //if user joining the interview show loading screen
   if (joiningLoading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-dark">
-        <Text className="text-white text-lg">Joining Interview...</Text>
+        <Text className="text-white text-lg text-center font-medium ">
+          Joining Interview...
+        </Text>
       </SafeAreaView>
     );
   }
   return (
     <SafeAreaView className="flex-1 bg-dark">
       {/* Tabs */}
-      <View className="flex-row justify-center mb-6 gap-x-4 px-6 mt-8">
+      <View className="flex-row justify-center mb-6 gap-x-4 px-6 ">
         {/* Appeared Tab */}
         <TouchableOpacity
           onPress={() => setisScheduled(false)}

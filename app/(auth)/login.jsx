@@ -3,7 +3,6 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,6 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import { useInterview } from "../../context/InterviewContext";
+import { setAccessToken } from "../../utils/getAccesstoken";
 
 const Login = () => {
   const [candidateId, setCandidateId] = useState("");
@@ -46,14 +46,14 @@ const Login = () => {
         phone: data?.candidate.phone,
       };
       // Store sensitive token securely
-      if (Platform.OS === "web") {
-        await AsyncStorage.setItem("access_token", data?.access_token);
-      } else {
-        await SecureStore.setItemAsync("access_token", data?.access_token);
-      }
+      await setAccessToken(data?.access_token);
 
       // Non-sensitive profile can stay in AsyncStorage
       await AsyncStorage.setItem("userDetails", JSON.stringify(userDetails));
+      await AsyncStorage.setItem(
+        "scheduledInterviews",
+        JSON.stringify(data.candidate.interviews)
+      );
       setauthToken(data.access_token);
       setuserDetails(userDetails);
       setScheduledInterviews(data.candidate.interviews);
