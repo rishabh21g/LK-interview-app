@@ -1,3 +1,4 @@
+import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { router } from "expo-router";
@@ -19,7 +20,7 @@ const Interviews = () => {
     setScheduledInterviews,
   } = useInterview();
   const [joiningLoading, setJoiningLoading] = useState(false);
-  const { userDetails } = useAuth();
+  const { userDetails, signOut } = useAuth();
 
   // function to handle join interview
   const handleJoinInterview = async (interview_name) => {
@@ -48,7 +49,7 @@ const Interviews = () => {
       );
       console.log(joinResult);
       setInterviewQuestions(joinResult.data);
-      console.log("Join interview response:", joinResult.data);
+      // console.log("Join interview response:", joinResult.data);
       router.push(`/${interview_name}`);
     } catch (err) {
       console.log("Error joining interview:", err);
@@ -148,6 +149,14 @@ const Interviews = () => {
           />
         )}
       </View>
+
+      <TouchableOpacity
+        className="absolute bottom-6 right-6 h-16 w-16 rounded-xl justify-center items-center bg-secondary p-3 z-10"
+        onPress={() => signOut()}
+      >
+        <AntDesign name="logout" size={22} color="#f49b33" />
+        <Text className="text-dark-icon text-xs">Logout</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

@@ -2,7 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
-import { RecordingPresets, useAudioRecorder } from "expo-audio";
+import { RecordingPresets, useAudioRecorder, useAudioPlayer } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as FileSystem from "expo-file-system";
 import { router } from "expo-router";
@@ -18,9 +18,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import useTimer from "../hooks/useTimer";
-
 import { useInterview } from "../context/InterviewContext";
+import useTimer from "../hooks/useTimer";
 import { grantPermission } from "../utils/grantPermission";
 import questionAudioCall from "../utils/questionAudio";
 
@@ -33,6 +32,7 @@ const InterviewDetail = () => {
   const [videoPermission, requestVideoPermission] = useCameraPermissions();
   const { userDetails } = useAuth();
   const { interviewQuestions } = useInterview();
+  const audioPlayer = useAudioPlayer();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const { min, sec } = useTimer(interviewQuestions?.time, finishInterview);
 
@@ -144,13 +144,32 @@ const InterviewDetail = () => {
     }
   }
 
-  // calling first time on render to take mic and camera input permission
+  // calling first time on render to take mic and camera input permission and fetch the first question url
   useEffect(() => {
-    grantPermission();
-    questionAudioCall(interviewQuestions);
-    if (Platform.OS !== "web") {
-      ToastAndroid.show("Interview Started", ToastAndroid.SHORT);
-    }
+    const initializeInterview = async () => {
+      await grantPermission();
+
+      if (Platform.OS !== "web") {
+        try {
+          const audioUri = await questionAudioCall(interviewQuestions);
+          if (audioUri) {
+            audioPlayer.replace(audioUri);
+            await audioPlayer.play();
+          }
+          ToastAndroid.show("Interview Started", ToastAndroid.SHORT);
+          ToastAndroid.show(
+            "Kindly turn on your mic and camera",
+            ToastAndroid.LONG
+          );
+        } catch (error) {
+          console.error("Failed to play audio:", error);
+        }
+      } else {
+        await questionAudioCall(interviewQuestions);
+      }
+    };
+
+    initializeInterview();
   }, []);
 
   // for disabling back button
@@ -162,6 +181,7 @@ const InterviewDetail = () => {
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation]);
+  // console.log(interviewQuestions);
   return (
     <SafeAreaView className="flex-1 bg-dark py-2">
       <View className="flex-1 px-5 gap-y-5">
