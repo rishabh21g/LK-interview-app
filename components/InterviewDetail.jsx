@@ -46,7 +46,8 @@ const InterviewDetail = () => {
       finishInterview,
     });
 
-  const { min, sec } = useTimer(interviewQuestions?.time, () =>
+  const { min, sec } = useTimer(
+    interviewQuestions?.time,
     finishInterview(segments, setSegments)
   );
 
