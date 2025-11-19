@@ -4,6 +4,7 @@ import Feather from "@expo/vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
 import { RecordingPresets, useAudioPlayer, useAudioRecorder } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import {
   Platform,
@@ -20,8 +21,11 @@ import useTimer from "../hooks/useTimer";
 import { finishInterview } from "../utils/finishInterview";
 import { grantPermission } from "../utils/grantPermission";
 import questionAudioCall from "../utils/questionAudio";
+import { submitAnswer } from "../utils/submitAnswer";
 
 const InterviewDetail = () => {
+  const { interviewQuestions } = useInterview();
+  const [questionIndex, setQuestionIndex] = useState(0);
   const [isRecording, setisRecording] = useState(false);
   const [isVideoRecording, setisVideoRecording] = useState(false);
   const [segments, setSegments] = useState([]);
@@ -29,58 +33,108 @@ const InterviewDetail = () => {
   const [facing] = useState("front");
   const [videoPermission, requestVideoPermission] = useCameraPermissions();
   const { userDetails } = useAuth();
-  const { interviewQuestions } = useInterview();
   const audioPlayer = useAudioPlayer();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const session_id = interviewQuestions?.session_id;
+  let currentQuestion = interviewQuestions?.questions[questionIndex];
+  const {
+    handleRecording,
+    handleVideoRecording,
+    handleDisconnect,
+    stopAudioRecording,
+  } = useInterviewRecording({
+    isRecording,
+    setisRecording,
+    setisVideoRecording,
+    audioRecorder,
+    segments,
+    setSegments,
+    videoPermission,
+    requestVideoPermission,
+    finishInterview,
+  });
 
-  const { handleRecording, handleVideoRecording, handleDisconnect } =
-    useInterviewRecording({
-      isRecording,
-      setisRecording,
-      setisVideoRecording,
-      audioRecorder,
-      segments,
-      setSegments,
-      videoPermission,
-      requestVideoPermission,
-      finishInterview,
-    });
-
-  const { min, sec } = useTimer(
-    interviewQuestions?.time,
-    finishInterview(segments, setSegments)
+  const { min, sec } = useTimer(interviewQuestions?.time, () =>
+    finishInterview(segments, setSegments),
   );
 
   // Use permission check hook
   usePermissionCheck(audioRecorder, videoPermission, requestVideoPermission);
 
-  // Initialize interview
-  useEffect(() => {
-    const initializeInterview = async () => {
-      await grantPermission();
-
-      if (Platform.OS !== "web") {
-        try {
-          const audioUri = await questionAudioCall(interviewQuestions);
-          if (audioUri) {
-            audioPlayer.replace(audioUri);
-            await audioPlayer.play();
-          }
-          ToastAndroid.show("Interview Started", ToastAndroid.SHORT);
-          ToastAndroid.show(
-            "Kindly turn on your mic and camera",
-            ToastAndroid.LONG
-          );
-        } catch (error) {
-          console.error("Failed to play audio:", error);
-        }
-      } else {
-        await questionAudioCall(interviewQuestions);
+  //handle submit answer
+  const handleSubmitAnswer = async () => {
+    try {
+      // Ensure we have a finalized segment for this answer
+      let lastUri = segments[segments.length - 1];
+      if (isRecording) {
+        const stoppedUri = await stopAudioRecording();
+        if (stoppedUri) lastUri = stoppedUri;
       }
-    };
 
+      if (!lastUri) {
+        if (Platform.OS !== "web") {
+          ToastAndroid.show(
+            "Please record your answer before submitting",
+            ToastAndroid.SHORT,
+          );
+        }
+        return;
+      }
+
+      const qid = currentQuestion?.qid;
+      const status = await submitAnswer({
+        audioSegmentUri: lastUri,
+        session_id,
+        qid,
+      });
+      console.log(status);
+    } catch (err) {
+      console.log("Error while submitting answer", err?.message);
+    } finally {
+      const total = interviewQuestions?.questions?.length || 0;
+      const isLast = questionIndex >= total - 1;
+
+      if (isLast) {
+        await finishInterview(segments, setSegments);
+      } else {
+        setQuestionIndex((idx) => idx + 1);
+      }
+    }
+  };
+
+  const initializeInterview = async () => {
+    await grantPermission();
+
+    if (Platform.OS !== "web") {
+      ToastAndroid.show("Interview Started", ToastAndroid.SHORT);
+      ToastAndroid.show(
+        "Kindly turn on your mic and camera",
+        ToastAndroid.LONG,
+      );
+    }
+  };
+
+  //Initialize Interview on mount
+  useEffect(() => {
     initializeInterview();
   }, []);
+
+  // Play TTS for the current question ID
+  useEffect(() => {
+    const playQuestionTTS = async () => {
+      if (!currentQuestion?.qid) return;
+      try {
+        const audioUri = await questionAudioCall(currentQuestion.qid);
+        if (Platform.OS !== "web" && audioUri) {
+          audioPlayer.replace(audioUri);
+          audioPlayer.play();
+        }
+      } catch (error) {
+        console.error("Failed to play question audio:", error);
+      }
+    };
+    playQuestionTTS();
+  }, [currentQuestion?.qid]);
 
   // Disable back button
   useEffect(() => {
@@ -155,6 +209,29 @@ const InterviewDetail = () => {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Submit Answer Button */}
+        <View className="w-full items-center mt-5">
+          <TouchableOpacity
+            onPress={handleSubmitAnswer}
+            className="flex-row items-center justify-center bg-light-tint px-8 py-3 rounded-full"
+          >
+            <Feather name="check" size={20} color="#fff" />
+            <Text className="text-dark-tint text-lg font-semibold ml-2">
+              Submit Answer
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Question Image */}
+        {currentQuestion?.image_url !== null && (
+          <View className="w-full items-center mt-4 mb-4">
+            <Image
+              source={{ uri: currentQuestion?.image_url }}
+              className="w-full h-48 rounded-lg"
+            />
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );

@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await deleteAccessToken();
       await AsyncStorage.removeItem("userDetails");
+      await AsyncStorage.removeItem("scheduledInterviews");
       setauthToken(null);
       setuserDetails({
         name: null,

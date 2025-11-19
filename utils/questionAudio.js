@@ -5,9 +5,8 @@ import getAccessToken from "./getAccesstoken";
 
 const QUESTION_URL = "https://interview.logicknots.com/voice/question-tts";
 
-const questionAudioCall = async (interviewQuestions) => {
+const questionAudioCall = async (qid) => {
   const access_token = await getAccessToken();
-  const qid = interviewQuestions.questions[0].qid;
   const finalUrl = `${QUESTION_URL}?qid=${qid}`;
 
   // for web

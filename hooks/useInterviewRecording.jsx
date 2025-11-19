@@ -30,6 +30,7 @@ export const useInterviewRecording = ({
       const uri = audioRecorder.uri;
       console.log("Recording saved at:", uri);
       setSegments((prev) => [...prev, uri]);
+      return uri;
     } catch (error) {
       console.error("Failed to stop recording:", error);
     }
@@ -93,5 +94,6 @@ export const useInterviewRecording = ({
     handleRecording,
     handleVideoRecording,
     handleDisconnect,
+    stopAudioRecording,
   };
 };

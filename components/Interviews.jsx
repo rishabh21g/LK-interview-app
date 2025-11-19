@@ -10,7 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { useInterview } from "../context/InterviewContext";
 import AppearedInterviewCard from "./AppearedInterviewCard";
 import ScheduledInterviewCard from "./ScheduledInterviewCard";
-
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 const Interviews = () => {
   const [isScheduled, setisScheduled] = useState(true);
   const {
@@ -20,7 +20,7 @@ const Interviews = () => {
     setScheduledInterviews,
   } = useInterview();
   const [joiningLoading, setJoiningLoading] = useState(false);
-  const { userDetails, signOut } = useAuth();
+  const { userDetails } = useAuth();
 
   // function to handle join interview
   const handleJoinInterview = async (interview_name) => {
@@ -45,7 +45,7 @@ const Interviews = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${access_token}`,
           },
-        }
+        },
       );
       console.log(joinResult);
       setInterviewQuestions(joinResult.data);
@@ -152,10 +152,15 @@ const Interviews = () => {
 
       <TouchableOpacity
         className="absolute bottom-6 right-6 h-16 w-16 rounded-xl justify-center items-center bg-secondary p-3 z-10"
-        onPress={() => signOut()}
+        onPress={() => {
+          router.replace({
+            pathname: "/[candidateID]",
+            params: { candidateID: userDetails?.candidateId },
+          });
+        }}
       >
-        <AntDesign name="logout" size={22} color="#f49b33" />
-        <Text className="text-dark-icon text-xs">Logout</Text>
+        <FontAwesome name="user" size={22} color="#f49b33" />
+        <Text className="text-dark-icon text-xs">Profile</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

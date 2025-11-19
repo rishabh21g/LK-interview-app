@@ -7,6 +7,7 @@ const UserLayout = () => {
         headerShown: false,
       }}
     >
+      <Stack.Screen name="index" />
       <Stack.Screen name="result" options={{ title: "Interview Results" }} />
     </Stack>
   );
